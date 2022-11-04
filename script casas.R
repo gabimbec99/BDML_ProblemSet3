@@ -16,12 +16,12 @@ houses_test <- import("D:/noveno semestre/big data/problem set 3/dataPS3/test.Rd
 
 
 houses_train <- st_as_sf(x = houses_train, ## datos
-                   coords=c("lon","lat"), ## coordenadas
-                   crs=4326) ## CRS
-
-houses_test <- st_as_sf(x = houses_test, ## datos
                          coords=c("lon","lat"), ## coordenadas
                          crs=4326) ## CRS
+
+houses_test <- st_as_sf(x = houses_test, ## datos
+                        coords=c("lon","lat"), ## coordenadas
+                        crs=4326) ## CRS
 
 leaflet() %>% addTiles() %>% addCircleMarkers(data=houses_train[1:50,])
 
@@ -117,4 +117,194 @@ leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>%
 matrix_dist_indu <- st_distance(x=houses_bta , y=industrial)
 mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
 houses_bta$mean_dist_indu = mean_dist_indu
-    
+
+
+# obtener la misma información pero para Medellín.
+
+#######################################
+############ Medellín #################
+#######################################
+
+# Primero hay que extraer las casas de Medellin
+houses_med <- houses_train %>% subset(city=="Medellín") 
+
+# grafico las casas
+leaflet() %>% addTiles() %>% addCircles(data=houses_med[1:50,])
+
+# distancia al paradero SITP más cercano. 
+bus = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="bus_station") 
+
+bus_sf = bus %>% osmdata_sf()
+
+bus_station = bus_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=bus_station , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_bus <- st_distance(x=houses_med , y=bus_station)
+min_dist_bus <- apply(matrix_dist_bus , 1 , min)
+houses_med$dist_buse = min_dist_bus
+
+# distancia promedio al restaurante. 
+restaurante = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="restaurant") 
+
+restaurante_sf = restaurante %>% osmdata_sf()
+
+restaurante = restaurante_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=restaurante , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_res <- st_distance(x=houses_med , y=restaurante)
+matrix_dist_res %>% head()
+
+mean_dist_res <- apply(matrix_dist_res , 1 , mean)
+houses_med$mean_dist_res = mean_dist_res
+
+# distancia promedio al bar 
+bar = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="bar") 
+
+bar_sf = bar %>% osmdata_sf()
+
+bar = bar_sf$osm_points %>% select(osm_id,amenity) 
+
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=bar , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_bar <- st_distance(x=houses_med , y=bar)
+mean_dist_bar <- apply(matrix_dist_bar , 1 , mean)
+houses_med$mean_dist_bar = mean_dist_bar
+
+# distancia al hospital más cercano. 
+hos = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="hospital") 
+
+hos_sf = hos %>% osmdata_sf()
+
+hos = hos_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=hos , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_hos <- st_distance(x=houses_med , y=hos)
+min_dist_hos<- apply(matrix_dist_hos , 1 , min)
+houses_med$min_dist_hos = min_dist_hos
+
+# Barrio industrial.
+industrial = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="building" , value="industrial") 
+
+industrial_sf = industrial %>% osmdata_sf()
+
+industrial = industrial_sf$osm_points %>% select(osm_id,building) 
+
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_indu <- st_distance(x=houses_med , y=industrial)
+mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
+houses_med$mean_dist_indu = mean_dist_indu
+
+
+#######################################
+############ Cali #################
+#######################################
+
+
+# grafico las casas
+leaflet() %>% addTiles() %>% addCircles(data=houses_test[1:50,])
+
+# distancia al paradero SITP más cercano. 
+bus = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="bus_station") 
+
+bus_sf = bus %>% osmdata_sf()
+
+bus_station = bus_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=bus_station , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_bus <- st_distance(x=houses_test , y=bus_station)
+min_dist_bus <- apply(matrix_dist_bus , 1 , min)
+houses_test$dist_buse = min_dist_bus
+
+# distancia procalio al restaurante. 
+restaurante = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="restaurant") 
+
+restaurante_sf = restaurante %>% osmdata_sf()
+
+restaurante = restaurante_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=restaurante , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_res <- st_distance(x=houses_test , y=restaurante)
+matrix_dist_res %>% head()
+
+mean_dist_res <- apply(matrix_dist_res , 1 , mean)
+houses_test$mean_dist_res = mean_dist_res
+
+# distancia procalio al bar 
+bar = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="bar") 
+
+bar_sf = bar %>% osmdata_sf()
+
+bar = bar_sf$osm_points %>% select(osm_id,amenity) 
+
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=bar , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_bar <- st_distance(x=houses_test , y=bar)
+mean_dist_bar <- apply(matrix_dist_bar , 1 , mean)
+houses_test$mean_dist_bar = mean_dist_bar
+
+# distancia al hospital más cercano. 
+hos = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="hospital") 
+
+hos_sf = hos %>% osmdata_sf()
+
+hos = hos_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=hos , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_hos <- st_distance(x=houses_test , y=hos)
+min_dist_hos<- apply(matrix_dist_hos , 1 , min)
+houses_test$min_dist_hos = min_dist_hos
+
+# Barrio industrial.
+
+#### NO FUNCIONÖ PARA CALI.
+industrial = opq(bbox = getbb("CaliColombia")) %>%
+  add_osm_feature(key="building" , value="industrial") 
+
+industrial_sf = industrial %>% osmdata_sf()
+
+industrial = industrial_sf$osm_points %>% select(osm_id,building) 
+
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_indu <- st_distance(x=houses_test , y=industrial)
+mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
+houses_test$mean_dist_indu = mean_dist_indu
+
+
+##################################################################
+################### unir los dataframes ##########################
+##################################################################
+
+
+houses_train <- rbind(houses_med, houses_bta).
+
