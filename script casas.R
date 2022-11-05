@@ -347,7 +347,7 @@ leaflet() %>% addTiles() %>% addCircles(data=inter_cal) %>% addPolygons(data=bar
 ################### Pegar la criminalidad a los barrios ##########################
 ##################################################################
 
-
+### cali 
 crimen_cali <- read.csv("D:/noveno semestre/big data/problem set 3/dataPS3/crimen_cali.csv", sep = ';')
 
 crimen_cali <- crimen_cali %>%
@@ -358,6 +358,47 @@ crimen_cali <- crimen_cali %>% group_by(COD_BARRIO) %>% summarise(crimen = sum(C
 inter_cal <- rename(inter_cal,  COD_BARRIO = id_barrio)
 
 df= inter_cal %>% inner_join(crimen_cali,by="COD_BARRIO")
+
+
+
+#### Bogota
+
+crimen_bogota <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "DAIUPZ", GDAL1_integer64_policy = TRUE)
+crimen_bogota <- spTransform(crimen_bogota, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+crimen_bogota = st_as_sf(crimen_bogota)
+
+crimen_bogota = subset(crimen_bogota, select = c(CMHP19CONT, CMIUUPLA))
+
+pal <- colorNumeric(
+  palette = "Blues",
+  domain = crimen_bogota$CMHP19CONT)
+
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g homicidios",
+  crimen_bogota$CMIUUPLA, crimen_bogota$CMHP19CONT
+) %>% lapply(htmltools::HTML)
+
+
+leaflet() %>% addTiles() %>% addPolygons(data=crimen_bogota,
+                                         fillColor = ~pal(CMHP19CONT),
+                                         weight = 2,
+                                         opacity = 1,
+                                         color = "white",
+                                         dashArray = "2",
+                                         fillOpacity = 1,
+                                           highlightOptions = highlightOptions(
+                                           weight = 5,
+                                           color = "#666",
+                                           dashArray = "",
+                                           fillOpacity = 0.7,
+                                           bringToFront = TRUE),
+                                             label = labels,
+                                             labelOptions = labelOptions(
+                                             style = list("font-weight" = "normal", padding = "3px 8px"),
+                                             textsize = "15px",
+                                             direction = "auto"))
+
 
 ##################################################################
 ################### unir los dataframes ##########################
