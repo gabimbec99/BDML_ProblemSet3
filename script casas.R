@@ -25,6 +25,8 @@ houses_test <- st_as_sf(x = houses_test, ## datos
 
 leaflet() %>% addTiles() %>% addCircleMarkers(data=houses_train[1:50,])
 
+colSums(is.na(houses_train))
+
 ###############################
 ########## Bogotá #############
 ###############################
@@ -129,7 +131,7 @@ houses_bta$mean_dist_indu = mean_dist_indu
 houses_med <- houses_train %>% subset(city=="Medellín") 
 
 # grafico las casas
-leaflet() %>% addTiles() %>% addCircles(data=houses_med[1:50,])
+leaflet() %>% addTiles() %>% addCircles(data=houses_med)
 
 # distancia al paradero SITP más cercano. 
 bus = opq(bbox = getbb("Medellín Colombia")) %>%
@@ -140,7 +142,7 @@ bus_sf = bus %>% osmdata_sf()
 bus_station = bus_sf$osm_points %>% select(osm_id,amenity) 
 
 leaflet() %>% addTiles() %>% addCircleMarkers(data=bus_station , col="red") %>% 
-  addCircles(data=houses_med[1:50,])
+  addCircles(data=houses_med)
 
 matrix_dist_bus <- st_distance(x=houses_med , y=bus_station)
 min_dist_bus <- apply(matrix_dist_bus , 1 , min)
@@ -300,6 +302,62 @@ matrix_dist_indu <- st_distance(x=houses_test , y=industrial)
 mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
 houses_test$mean_dist_indu = mean_dist_indu
 
+############################################################################
+################### Añadir información de fuentes de las alcaldías ##########
+#############################################################################
+
+# Medellín #
+#### importar el barrio de la casa. 
+install.packages("rgdal")
+library(rgdal)
+barrios_med <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "planeacion_gdb", GDAL1_integer64_policy = TRUE)
+barrios_med <- spTransform(barrios_med, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+barrios_med = st_as_sf(barrios_med)
+houses_med = st_as_sf(houses_med)
+
+
+inter <- st_join(houses_med, barrios_med)
+
+
+
+# grafico las casas
+
+leaflet() %>% addTiles() %>% addCircles(data=inter) %>% addPolygons(data=barrios_med, color= "red")
+
+#####
+#### Barrios cali
+
+barrios_cal <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "mc_barrios", GDAL1_integer64_policy = TRUE)
+barrios_cal <- spTransform(barrios_cal, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+barrios_cal = st_as_sf(barrios_cal)
+houses_test = st_as_sf(houses_test)
+
+
+inter_cal <- st_join(houses_test, barrios_cal)
+
+
+
+# grafico las casas
+
+leaflet() %>% addTiles() %>% addCircles(data=inter_cal) %>% addPolygons(data=barrios_cal, color= "red")
+
+##################################################################
+################### Pegar la criminalidad a los barrios ##########################
+##################################################################
+
+
+crimen_cali <- read.csv("D:/noveno semestre/big data/problem set 3/dataPS3/crimen_cali.csv", sep = ';')
+
+crimen_cali <- crimen_cali %>%
+  filter(VIGENCIA==2019)
+
+crimen_cali <- crimen_cali %>% group_by(COD_BARRIO) %>% summarise(crimen = sum(CANTIDAD))
+
+inter_cal <- rename(inter_cal,  COD_BARRIO = id_barrio)
+
+df= inter_cal %>% inner_join(crimen_cali,by="COD_BARRIO")
 
 ##################################################################
 ################### unir los dataframes ##########################
