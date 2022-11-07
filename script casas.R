@@ -11,8 +11,21 @@ p_load(tidyverse,rio,skimr,
        ggsn, ## map scale bar 
        osmdata) ## packages with census data
 
-houses_train <- import("D:/noveno semestre/big data/problem set 3/dataPS3/train.Rds")
-houses_test <- import("D:/noveno semestre/big data/problem set 3/dataPS3/test.Rds")
+#Esto es para mi (Gabriela)
+#install the osmdata, sf, tidyverse and ggmap package
+if(!require("osmdata")) install.packages("osmdata")
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("sf")) install.packages("sf")
+if(!require("ggmap")) install.packages("ggmap")
+install.packages("sp")
+#load packages
+library(tidyverse)
+library(osmdata)
+library(sf)
+library(ggmap)
+
+houses_train <- import("/Users/gabrielamejia/Documents/GitHub/BDML_ProblemSet3/dataPS3/train.Rds")
+houses_test <- import("/Users/gabrielamejia/Documents/GitHub/BDML_ProblemSet3/dataPS3/test.Rds")
 
 
 houses_train <- st_as_sf(x = houses_train, ## datos
@@ -566,7 +579,6 @@ for (i in c("PORTERÍA","PORTERIA","RECEPCION","RECEPCIÓN","SEGURIDAD PRIVADA",
 ########## Bogotá #############
 ###############################
 
-
 # Primero hay que extraer las casas de bogotá 
 houses_bta <- houses_train %>% subset(city=="Bogotá D.C") 
 
@@ -578,7 +590,7 @@ available_tags("amenity") %>% head(20)
 
 # distancia al paradero SITP más cercano. 
 bus = opq(bbox = getbb("Bogotá Colombia")) %>%
-  add_osm_feature(key="amenity" , value="bus_station") 
+  add_osm_feature(key="amenity" , value="bus_station")
 
 bus_sf = bus %>% osmdata_sf()
 
@@ -590,6 +602,7 @@ leaflet() %>% addTiles() %>% addCircleMarkers(data=bus_station , col="red") %>%
 matrix_dist_bus <- st_distance(x=houses_bta , y=bus_station)
 min_dist_bus <- apply(matrix_dist_bus , 1 , min)
 houses_bta$dist_buse = min_dist_bus
+
 
 # distancia promedio al restaurante. 
 restaurante = opq(bbox = getbb("Bogotá Colombia")) %>%
@@ -654,7 +667,65 @@ leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>%
 matrix_dist_indu <- st_distance(x=houses_bta , y=industrial)
 mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
 houses_bta$mean_dist_indu = mean_dist_indu
+##OTRAS VARIABLES IMPORTANTES##
+# cercanía con universidades
+universidad = opq(bbox = getbb("Bogotá Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	university") 
 
+universidad_sf = 	universidad %>% osmdata_sf()
+
+university = 	universidad_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	university , col="red") %>% 
+  addCircles(data=houses_bta[1:50,])
+
+matrix_dist_uni <- st_distance(x=houses_bta , y=university)
+min_dist_uni <- apply(matrix_dist_uni , 1 , min)
+houses_bta$dist_uni = min_dist_uni
+
+# cercanía con mujeres de la vida galante y moteles
+burdel = opq(bbox = getbb("Bogotá Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	brothel") 
+
+burdel_sf = 	burdel %>% osmdata_sf()
+
+brothel = 	burdel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	brothel , col="red") %>% 
+  addCircles(data=houses_bta[1:50,])
+
+matrix_dist_put <- st_distance(x=houses_bta , y=brothel)
+min_dist_put <- apply(matrix_dist_put , 1 , min)
+houses_bta$dist_put = min_dist_put
+
+motel = opq(bbox = getbb("Bogotá Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	love_hotel") 
+
+motel_sf = 	motel %>% osmdata_sf()
+
+love_hotel = 	motel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	love_hotel , col="red") %>% 
+  addCircles(data=houses_bta[1:50,])
+
+matrix_dist_mot <- st_distance(x=houses_bta , y=love_hotel)
+min_dist_mot <- apply(matrix_dist_mot , 1 , min)
+houses_bta$dist_mot = min_dist_mot
+
+# cercanía con cárceles
+carcel = opq(bbox = getbb("Bogotá Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	prison") 
+
+carcel_sf = 	carcel %>% osmdata_sf()
+
+prison = 	carcel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	prison , col="red") %>% 
+  addCircles(data=houses_bta[1:50,])
+
+matrix_dist_pri <- st_distance(x=houses_bta , y=prison)
+min_dist_pri <- apply(matrix_dist_pri , 1 , min)
+houses_bta$dist_pri = min_dist_pri
 
 # obtener la misma información pero para Medellín.
 
