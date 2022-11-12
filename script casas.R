@@ -727,6 +727,14 @@ matrix_dist_cat <- st_distance(x=houses_bta , y=chico)
 min_dist_cat <- apply(matrix_dist_cat , 1 , min)
 houses_bta$dist_cat = min_dist_cat
 
+#cercanía con plaza del "centro"
+#Para Bogotá se toma la Plaza de Bolivar
+
+plaza <- geocode_OSM("Plaza de Bolivar, Bogotá", as.sf=T)
+leaflet() %>% addTiles() %>% addCircles(data=plaza)
+matrix_dist_pla <- st_distance(x=houses_bta , y=plaza)
+min_dist_pla <- apply(matrix_dist_pla , 1 , min)
+houses_bta$dist_pla = min_dist_pla
 
 # obtener la misma información pero para Medellín.
 
@@ -859,6 +867,16 @@ matrix_dist_cat <- st_distance(x=houses_med , y=Poblado)
 min_dist_cat <- apply(matrix_dist_cat , 1 , min)
 houses_med$dist_cat = min_dist_cat
 
+#cercanía con plaza del "centro"
+#Para Medellín se toma la Basílica Metropolitana de Medellín
+
+plaza <- geocode_OSM("Basílica Metropolitana de Medellín, Medellín", as.sf=T)
+leaflet() %>% addTiles() %>% addCircles(data=plaza)
+matrix_dist_pla <- st_distance(x=houses_bta , y=plaza)
+min_dist_pla <- apply(matrix_dist_pla , 1 , min)
+houses_bta$dist_pla = min_dist_pla
+
+
 #######################################
 ############ Cali #################
 #######################################
@@ -985,6 +1003,14 @@ matrix_dist_cat <- st_distance(x=houses_test , y=santa_rita)
 min_dist_cat <- apply(matrix_dist_cat , 1 , min)
 houses_test$dist_cat = min_dist_cat
 
+#cercanía con "centro"
+#Para Cali se toma la plazoleta Jorge Isaacs
+
+plaza <- geocode_OSM("Plazoleta Jorge Isaacs, Cali", as.sf=T)
+leaflet() %>% addTiles() %>% addCircles(data=plaza)
+matrix_dist_pla <- st_distance(x=houses_test , y=plaza)
+min_dist_pla <- apply(matrix_dist_pla , 1 , min)
+houses_test$dist_pla = min_dist_pla
 
 ############################################################################
 ################### Añadir información de fuentes de las alcaldías ##########
