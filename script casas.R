@@ -706,7 +706,7 @@ matrix_dist_uni <- st_distance(x=houses_bta , y=university)
 min_dist_uni <- apply(matrix_dist_uni , 1 , min)
 houses_bta$dist_uni = min_dist_uni
 
-# cercanía con mujeres de la vida galante y moteles
+# cercanía con prostibulos y moteles
 burdel = opq(bbox = getbb("Bogotá Colombia")) %>%
   add_osm_feature(key="amenity" , value="	brothel") 
 
@@ -841,6 +841,64 @@ matrix_dist_indu <- st_distance(x=houses_med , y=industrial)
 mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
 houses_med$mean_dist_indu = mean_dist_indu
 
+# cercanía con universidades
+universidad = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	university") 
+
+universidad_sf = 	universidad %>% osmdata_sf()
+
+university = 	universidad_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	university , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_uni <- st_distance(x=houses_med , y=university)
+min_dist_uni <- apply(matrix_dist_uni , 1 , min)
+houses_med$dist_uni = min_dist_uni
+
+# cercanía con prostibulos y moteles
+burdel = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	brothel") 
+
+burdel_sf = 	burdel %>% osmdata_sf()
+
+brothel = 	burdel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	brothel , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_put <- st_distance(x=houses_med , y=brothel)
+min_dist_put <- apply(matrix_dist_put , 1 , min)
+houses_med$dist_put = min_dist_put
+
+motel = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	love_hotel") 
+
+motel_sf = 	motel %>% osmdata_sf()
+
+love_hotel = 	motel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	love_hotel , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_mot <- st_distance(x=houses_med , y=love_hotel)
+min_dist_mot <- apply(matrix_dist_mot , 1 , min)
+houses_med$dist_mot = min_dist_mot
+
+# cercanía con cárceles
+carcel = opq(bbox = getbb("Medellín Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	prison") 
+
+carcel_sf = 	carcel %>% osmdata_sf()
+
+prison = 	carcel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	prison , col="red") %>% 
+  addCircles(data=houses_med[1:50,])
+
+matrix_dist_pri <- st_distance(x=houses_med , y=prison)
+min_dist_pri <- apply(matrix_dist_pri , 1 , min)
+houses_med$dist_pri = min_dist_pri
 
 #######################################
 ############ Cali #################
@@ -916,7 +974,7 @@ houses_test$min_dist_hos = min_dist_hos
 # Barrio industrial.
 
 #### NO FUNCIONÖ PARA CALI.
-industrial = opq(bbox = getbb("CaliColombia")) %>%
+industrial = opq(bbox = getbb("Cali Colombia")) %>%
   add_osm_feature(key="building" , value="industrial") 
 
 industrial_sf = industrial %>% osmdata_sf()
@@ -930,6 +988,65 @@ leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>%
 matrix_dist_indu <- st_distance(x=houses_test , y=industrial)
 mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
 houses_test$mean_dist_indu = mean_dist_indu
+
+# cercanía con universidades
+universidad = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	university") 
+
+universidad_sf = 	universidad %>% osmdata_sf()
+
+university = 	universidad_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	university , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_uni <- st_distance(x=houses_test , y=university)
+min_dist_uni <- apply(matrix_dist_uni , 1 , min)
+houses_test$dist_uni = min_dist_uni
+
+# cercanía con prostibulos y moteles
+burdel = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	brothel") 
+
+burdel_sf = 	burdel %>% osmdata_sf()
+
+brothel = 	burdel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	brothel , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_put <- st_distance(x=houses_test , y=brothel)
+min_dist_put <- apply(matrix_dist_put , 1 , min)
+houses_test$dist_put = min_dist_put
+
+motel = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	love_hotel") 
+
+motel_sf = 	motel %>% osmdata_sf()
+
+love_hotel = 	motel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	love_hotel , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_mot <- st_distance(x=houses_test , y=love_hotel)
+min_dist_mot <- apply(matrix_dist_mot , 1 , min)
+houses_test$dist_mot = min_dist_mot
+
+# cercanía con cárceles
+carcel = opq(bbox = getbb("Cali Colombia")) %>%
+  add_osm_feature(key="amenity" , value="	prison") 
+
+carcel_sf = 	carcel %>% osmdata_sf()
+
+prison = 	carcel_sf$osm_points %>% select(osm_id,amenity) 
+
+leaflet() %>% addTiles() %>% addCircleMarkers(data=	prison , col="red") %>% 
+  addCircles(data=houses_test[1:50,])
+
+matrix_dist_pri <- st_distance(x=houses_test , y=prison)
+min_dist_pri <- apply(matrix_dist_pri , 1 , min)
+houses_test$dist_pri = min_dist_pri
 
 ############################################################################
 ################### Añadir información de fuentes de las alcaldías ##########
