@@ -104,21 +104,6 @@ matrix_dist_hos <- st_distance(x=houses_bta , y=hos)
 min_dist_hos<- apply(matrix_dist_hos , 1 , min)
 houses_bta$min_dist_hos = min_dist_hos
 
-# Barrio industrial.
-industrial = opq(bbox = getbb("Bogotá Colombia")) %>%
-  add_osm_feature(key="building" , value="industrial") 
-
-industrial_sf = industrial %>% osmdata_sf()
-
-industrial = industrial_sf$osm_points %>% select(osm_id,building) 
-
-
-leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>% 
-  addCircles(data=houses_bta[1:50,])
-
-matrix_dist_indu <- st_distance(x=houses_bta , y=industrial)
-mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
-houses_bta$mean_dist_indu = mean_dist_indu
 
 
 # obtener la misma información pero para Medellín.
@@ -196,21 +181,7 @@ matrix_dist_hos <- st_distance(x=houses_med , y=hos)
 min_dist_hos<- apply(matrix_dist_hos , 1 , min)
 houses_med$min_dist_hos = min_dist_hos
 
-# Barrio industrial.
-industrial = opq(bbox = getbb("Medellín Colombia")) %>%
-  add_osm_feature(key="building" , value="industrial") 
 
-industrial_sf = industrial %>% osmdata_sf()
-
-industrial = industrial_sf$osm_points %>% select(osm_id,building) 
-
-
-leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>% 
-  addCircles(data=houses_med[1:50,])
-
-matrix_dist_indu <- st_distance(x=houses_med , y=industrial)
-mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
-houses_med$mean_dist_indu = mean_dist_indu
 
 
 #######################################
@@ -284,23 +255,6 @@ matrix_dist_hos <- st_distance(x=houses_test , y=hos)
 min_dist_hos<- apply(matrix_dist_hos , 1 , min)
 houses_test$min_dist_hos = min_dist_hos
 
-# Barrio industrial.
-
-#### NO FUNCIONÖ PARA CALI.
-industrial = opq(bbox = getbb("CaliColombia")) %>%
-  add_osm_feature(key="building" , value="industrial") 
-
-industrial_sf = industrial %>% osmdata_sf()
-
-industrial = industrial_sf$osm_points %>% select(osm_id,building) 
-
-
-leaflet() %>% addTiles() %>% addCircleMarkers(data=industrial , col="red") %>% 
-  addCircles(data=houses_test[1:50,])
-
-matrix_dist_indu <- st_distance(x=houses_test , y=industrial)
-mean_dist_indu <- apply(matrix_dist_indu , 1 , mean)
-houses_test$mean_dist_indu = mean_dist_indu
 
 ############################################################################
 ################### Añadir información de fuentes de las alcaldías ##########
@@ -317,13 +271,13 @@ barrios_med = st_as_sf(barrios_med)
 houses_med = st_as_sf(houses_med)
 
 
-inter <- st_join(houses_med, barrios_med)
+inter_med <- st_join(houses_med, barrios_med)
 
 
 
 # grafico las casas
 
-leaflet() %>% addTiles() %>% addCircles(data=inter) %>% addPolygons(data=barrios_med, color= "red")
+leaflet() %>% addTiles() %>% addCircles(data=inter_med) %>% addPolygons(data=barrios_med, color= "red")
 
 #####
 #### Barrios cali
@@ -334,18 +288,32 @@ barrios_cal <- spTransform(barrios_cal, CRS("+proj=longlat +datum=WGS84 +no_defs
 barrios_cal = st_as_sf(barrios_cal)
 houses_test = st_as_sf(houses_test)
 
-
 inter_cal <- st_join(houses_test, barrios_cal)
 
+
+###### Barrios Bogota y crimen bta.
+
+
+barrios_bta <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "DAIUPZ", GDAL1_integer64_policy = TRUE)
+barrios_bta <- spTransform(barrios_bta, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+crimen_bogota = subset(barrios_bta, select = c(CMHP19CONT, CMIUUPLA))
+
+
+crimen_bogota = st_as_sf(crimen_bogota)
+houses_bta = st_as_sf(houses_bta)
+
+
+houses_bta <- st_join(houses_bta, crimen_bogota)
 
 
 # grafico las casas
 
-leaflet() %>% addTiles() %>% addCircles(data=inter_cal) %>% addPolygons(data=barrios_cal, color= "red")
+leaflet() %>% addTiles() %>% addCircles(data=houses_bta) %>% addPolygons(data=barrios_bta, color= "red")
 
 ##################################################################
 ################### Pegar la criminalidad a los barrios ##########################
 ##################################################################
+
 
 ### cali 
 crimen_cali <- read.csv("D:/noveno semestre/big data/problem set 3/dataPS3/crimen_cali.csv", sep = ';')
@@ -357,47 +325,46 @@ crimen_cali <- crimen_cali %>% group_by(COD_BARRIO) %>% summarise(crimen = sum(C
 
 inter_cal <- rename(inter_cal,  COD_BARRIO = id_barrio)
 
-df= inter_cal %>% inner_join(crimen_cali,by="COD_BARRIO")
+houses_test= inter_cal %>% inner_join(crimen_cali,by="COD_BARRIO")
 
 
 
-#### Bogota
+#### Medellin
+crimen_med <- read.csv("D:/noveno semestre/big data/problem set 3/dataPS3/hurto_a_persona.csv", sep = ';')
+library(stringr)
 
-crimen_bogota <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "DAIUPZ", GDAL1_integer64_policy = TRUE)
-crimen_bogota <- spTransform(crimen_bogota, CRS("+proj=longlat +datum=WGS84 +no_defs"))
-
-crimen_bogota = st_as_sf(crimen_bogota)
-
-crimen_bogota = subset(crimen_bogota, select = c(CMHP19CONT, CMIUUPLA))
-
-pal <- colorNumeric(
-  palette = "Blues",
-  domain = crimen_bogota$CMHP19CONT)
-
-labels <- sprintf(
-  "<strong>%s</strong><br/>%g homicidios",
-  crimen_bogota$CMIUUPLA, crimen_bogota$CMHP19CONT
-) %>% lapply(htmltools::HTML)
+crimen_med$fecha_hecho = str_sub(crimen_med$fecha_hecho,1,4) 
+crimen_med <- crimen_med %>%
+  filter(fecha_hecho==2019)
 
 
-leaflet() %>% addTiles() %>% addPolygons(data=crimen_bogota,
-                                         fillColor = ~pal(CMHP19CONT),
-                                         weight = 2,
-                                         opacity = 1,
-                                         color = "white",
-                                         dashArray = "2",
-                                         fillOpacity = 1,
-                                           highlightOptions = highlightOptions(
-                                           weight = 5,
-                                           color = "#666",
-                                           dashArray = "",
-                                           fillOpacity = 0.7,
-                                           bringToFront = TRUE),
-                                             label = labels,
-                                             labelOptions = labelOptions(
-                                             style = list("font-weight" = "normal", padding = "3px 8px"),
-                                             textsize = "15px",
-                                             direction = "auto"))
+crimen_med = subset(crimen_med, select = c(codigo_barrio, cantidad))
+crimen_med$codigo_barrio <- gsub("[[:punct:]]", "", crimen_med$codigo_barrio) #this works on a single
+crimen_med <- rename(crimen_med, CODIGO = codigo_barrio)
+
+crimen_med <- crimen_med %>% group_by(CODIGO) %>% summarise(crimen = sum(cantidad))
+
+
+inter_med= inter_med %>% inner_join(crimen_med,by="CODIGO")
+
+
+
+leaflet() %>% addTiles() %>% addCircles(data=crimen_med)%>%addPolygons(data= barrios_med, color='red')
+
+
+
+
+
+crimen_cali <- crimen_cali %>% group_by(COD_BARRIO) %>% summarise(crimen = sum(crimen))
+
+inter_cal <- rename(inter_cal,  COD_BARRIO= id_barrio)
+
+houses_test= inter_cal %>% inner_join(crimen_cali,by="COD_BARRIO")
+
+
+
+
+
 
 
 ##################################################################
@@ -406,4 +373,89 @@ leaflet() %>% addTiles() %>% addPolygons(data=crimen_bogota,
 
 
 houses_train <- rbind(houses_med, houses_bta).
+
+
+
+##################################################################
+################### información del Marco geoestadístico del DANE ##########################
+##################################################################
+
+MGDANE <- readOGR(dsn = "D:/noveno semestre/big data/problem set 3/dataPS3", layer = "MGN_ANM_SECCION_URBANA", GDAL1_integer64_policy = TRUE)
+MGDANE <- spTransform(MGDANE, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+MGDANE = st_as_sf(MGDANE)
+
+
+## quitar del MGDANE los municipios que no interesan.
+
+
+MGDANE = subset(MGDANE, select = c(MPIO_CDPMP, SETU_CCNCT,SECU_CCNCT, STP9_2_1_M, STP9_2_2_M, STP9_2_3_M, STP9_3_1_N, STP9_3_2_N, STP9_3_3_N, STP9_3_5_N, STP9_3_10, STP19_ES_2, STP19_EE_1 , STP19_EE_2, STP19_EE_3, STP19_EE_4, STP19_EE_5, STP19_EE_6, STP19_ACU2, STP19_ALC2, STP19_GAS2, STP19_REC2, STP19_INT2, STP51_PRIM, STP51_SECU, STP51_SUPE, STP51_POST, STP51_13_E))
+
+
+MGDANE = st_as_sf(MGDANE)
+houses_test = st_as_sf(houses_test)
+
+
+sf_use_s2(FALSE)
+prueba_cali <- st_join(houses_test, MGDANE)
+
+
+colSums(is.na(prueba_cali)) 
+
+cali <- MGDANE %>%
+  filter(MPIO_CDPMP==76001)
+
+### hacer buffer de las casas de cali.
+library(maps)
+library(rgeos)
+library(sp)
+prueba_buffer <- prueba_cali[,20]
+prueba_buffer <- sf:::as_Spatial(prueba_buffer$geometry)
+
+prueba_buffer <- spTransform( prueba_buffer, CRS("+proj=longlat +datum=WGS84")) 
+pc100km <- gBuffer( prueba_buffer, width=100)
+ 
+
+leaflet() %>% addTiles() %>% addPolygons(data=pc100km, color= "red")
+
+
+
+prueba_buffer = st_as_sf(prueba_buffer)
+
+
+pointsBuffer <- gBuffer(prueba_buffer, width=.5, byid = TRUE)
+leaflet() %>% addTiles() %>% addCircles(data=prueba_cali) %>% addPolygons(data=cali, color= "red")
+
+
+
+colSums(is.na(houses_bta)) 
+
+MGDANE <- MGDANE %>%
+  filter(MPIO_CDPMP==05001 | MPIO_CDPMP==76001| MPIO_CDPMP==11001)
+
+
+bta <- MGDANE %>%
+  filter(MPIO_CDPMP==11001)
+
+
+
+bta = st_as_sf(bta)
+houses_bta = st_as_sf(houses_bta)
+
+
+sf_use_s2(FALSE)
+houses_bta <- st_join(houses_bta, bta)
+
+
+colSums(is.na(houses_bta)) 
+
+
+
+
+
+leaflet() %>% addTiles() %>% addCircles(data=houses_bta) %>% addPolygons(data=MGDANE, color= "red")
+
+
+
+
 
