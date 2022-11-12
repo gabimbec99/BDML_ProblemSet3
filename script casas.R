@@ -248,14 +248,36 @@ for (j in c("PARQUEADERO","GARAJE","ESTACIONAMIENTO","PARKING","ESPACIO CARRO"))
 ##Precios
 ##############################
 
+houses_test$price<-NA
+
 houses_test$description <- gsub("\\.", "",houses_test$description)
 houses_test$description <- gsub("\\$", "PESOS",houses_test$description)
 
+houses_test$numbers<-gsub("[[:alpha:]]", "",houses_test$description)
 
-for (i in c("PRECIO","VENTA")){
+
+for (i in c("PRECIO","VENTA","PRECIO:","PRECIO: ","VENTA:","VENTA: ","PRECIO ","VENTA ","VALOR ","VALOR","VALOR:","UAR",",","POR")){
   houses_test <- houses_test %>% 
-    mutate(price = ifelse(is.na(price)==T | price>as.numeric(gsub("[[:alpha:]]", "", str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+PESOS+[:digit:]+")))),as.numeric(gsub("[[:alpha:]]", "", str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+PESOS+[:digit:]+")))),price))
+    mutate(price = ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+PESOS+[:digit:]+")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:digit:]+")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:space:]+[:digit:]+[:space:]+MILLONES")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:space:]+[:digit:]+MILLONES")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+[:digit:]+")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+[:digit:]+[:space:]+MILLONES")))),price),
+            price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:space:]+[:digit:]+")))),price), 
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:digit:]+\n")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+[:digit:]+[:space:]")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:space:]+[:digit:]+[:space:]")))),price),
+           price = ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+PESOS+[:digit:]+[:space:]")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:digit:]+\n")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+[:digit:]+\n")))),price),
+           price=ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+PESOS+[:space:]+[:digit:]+\n")))),price),
+           price = ifelse(is.na(price)==T,as.numeric(gsub("[[:alpha:]]", "",str_extract(string=houses_test$description,pattern=paste0(i,"+[:space:]+PESOS+[:digit:]+\n")))),price))
 }
+
+
+houses_test$price=ifelse(houses_test$price>=100 & houses_test$price<=10000000,houses_test$price*1000000,ifelse(houses_test$price<10,NA,houses_test$price))
+houses_test$price=ifelse(houses_test$price<150000000,houses_test$price*2,houses_test$price)
 
 
 ##############################
@@ -424,7 +446,7 @@ for (i in c("GIMNASIO","PESAS","GYM","EJERCICIO","FÚTBOL","BALONCESTO","CANCHAS
 houses_train$social <- NA
 houses_test$social <- NA
 
-for (i in c("SALON SOCIAL","SALON COMUNAL","SALA SOCIAL","SALA COMUNAL","SALA DE FIESTAS","SALA DE REUNIÓN","SALAS DE REUNIÓN")){
+for (i in c("SALON SOCIAL","SALON COMUNAL","SALA SOCIAL","SALA COMUNAL","SALA DE FIESTAS","SALA DE REUNIÓN","SALAS DE REUNIÓN","SOCIAL")){
   houses_train$social=ifelse(is.na(houses_train$social)==T & str_detect(string=houses_train$description , pattern=i)==T,1,houses_train$social)
   houses_test$social=ifelse(is.na(houses_test$social)==T & str_detect(string=houses_test$description , pattern=i)==T,1,houses_test$social)
 }
@@ -437,7 +459,7 @@ for (i in c("SALON SOCIAL","SALON COMUNAL","SALA SOCIAL","SALA COMUNAL","SALA DE
 houses_train$parks <- NA
 houses_test$parks <- NA
 
-for (i in c("PARQUE","PARQUE INFANTIL","PARQUES","RESERVA","ZONA VERDE","ZONAS VERDES")){
+for (i in c("PARQUE","PARQUE INFANTIL","PARQUES","RESERVA","ZONA VERDE","ZONAS VERDES","VERDE")){
   houses_train$parks=ifelse(is.na(houses_train$parks)==T & str_detect(string=houses_train$description , pattern=i)==T,1,houses_train$parks)
   houses_test$parks=ifelse(is.na(houses_test$parks)==T & str_detect(string=houses_test$description , pattern=i)==T,1,houses_test$parks)
 }
@@ -572,6 +594,7 @@ for (i in c("PORTERÍA","PORTERIA","RECEPCION","RECEPCIÓN","SEGURIDAD PRIVADA",
   houses_train$port=ifelse(is.na(houses_train$port)==T & str_detect(string=houses_train$description , pattern=i)==T,1,houses_train$port)
   houses_test$port=ifelse(is.na(houses_test$port)==T & str_detect(string=houses_test$description , pattern=i)==T,1,houses_test$port)
 }
+
 
 
 
